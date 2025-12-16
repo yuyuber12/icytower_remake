@@ -10,5 +10,6 @@ CLOCK = pygame.time.Clock()
 DARK_COLOR = (245, 245, 245)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-CURRENT_FONT = pygame.font.Font("Fonts/chunky font.ttf", 50)
-
+CURRENT_FONT = pygame.font.Font("Fonts/Grandboom Demo.otf", 45)
+FINGER_IMAGE = pygame.image.load("Menu_images/finger-selector.png")
+FINGER_IMAGE= pygame.transform.scale(FINGER_IMAGE, ((WIDTH // 5 -65) , (HEIGHT// 5 -50)))

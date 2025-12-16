@@ -10,6 +10,8 @@ class Menu:
         self.m_is_menu_running = True
         self.background_image = pygame.image.load("Menu_images/MenuBG.png")
         self.background_image = pygame.transform.scale(self.background_image, (Config.WIDTH, Config.HEIGHT))
+        self.paper_image = pygame.image.load("Menu_images/paper.png")
+        self.paper_image = pygame.transform.scale(self.paper_image, ((Config.WIDTH // 2 ) , (Config.HEIGHT// 2 )))
         self.menu_font = Config.CURRENT_FONT
         self.play_game_text = self.menu_font.render("PLAY GAME", True, Config.BLACK)
         self.play_game_text_x = (self.m_screen_one.get_width() / 2 - 100) - (self.play_game_text.get_width() / 2 - 200)
@@ -23,9 +25,11 @@ class Menu:
         self.exit_text = self.menu_font.render("EXIT", True, Config.BLACK)
         # Todo # self.play_game_rect לכתוב את כל המשתנים האלה מחדש ולפרק אותם כמו
         #TODO # להוסיף רקע למשחק
-        #TODO # להויסף לחיצות לכפתורים
+        #TODO # להויסף לחיצות לכפתורים`
         #TODO #
-
+        #Finger x , y
+        self.finger_x = self.play_game_rect.left - Config.FINGER_IMAGE.get_width() - 10
+        self.finger_y = self.play_game_rect.centery - Config.FINGER_IMAGE.get_height() // 2  + 10
 
     def run(self):
         while self.m_is_menu_running:
@@ -37,12 +41,23 @@ class Menu:
                         mouse_pos_x, mouse_pos_y = pygame.mouse.get_pos()
                         if self.play_game_rect.collidepoint(pygame.mouse.get_pos()):
                             self.m_is_menu_running = False
+
+
+
                         # if self.m_screen_one.get_width() // 2 - self.play_game_text.get_width() // 2 <= mouse_pos_y <= 200:
                         #     self.m_is_menu_running = False
                         #TODO return "exit"
 
             self.display_menu()
+
+            mouse_pos = pygame.mouse.get_pos()
+            is_hover = self.play_game_rect.collidepoint(mouse_pos)
+            if is_hover:
+                self.m_screen_one.blit(Config.FINGER_IMAGE, (self.finger_x, self.finger_y))
+
+
             pygame.display.update()
+
             Config.CLOCK.tick(Config.FPS)
         return None
 
@@ -51,12 +66,12 @@ class Menu:
         # Background Color
         # self.m_screen_one.fill((30, 30, 30))
         self.m_screen_one.blit(self.background_image, (0, 0))
-
+        self.m_screen_one.blit(self.paper_image, (270, 55))
         self.m_screen_one.blit(self.play_game_text, self.play_game_rect)
         self.m_screen_one.blit(self.instructions_text,
                                ((self.m_screen_one.get_width() / 2 - 100) - (self.play_game_text.get_width() / 2 - 200), 145))
         self.m_screen_one.blit(self.exit_text,
-                               ((self.m_screen_one.get_width() / 2- 100) - (self.exit_text.get_width() / 2 - 120), 215))
+                               ((self.m_screen_one.get_width() / 2- 100) - (self.exit_text.get_width() / 2 - 140), 215))
         
 
 

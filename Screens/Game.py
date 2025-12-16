@@ -26,11 +26,16 @@ class Game:
         self.game_font = Config.CURRENT_FONT
         self.overlay = pygame.Surface((Config.WIDTH, Config.HEIGHT), pygame.SRCALPHA)
         self.pause_text = self.game_font.render("PAUSED", True, (255, 255, 255))
+
         self.pause_rect = self.pause_text.get_rect(center=(Config.WIDTH // 2, 50))
+
         self.back_to_menu_text = self.game_font.render("BACK TO MENU", True, (255, 255, 255))
-        self.back_to_menu_rect = self.pause_text.get_rect(center=(Config.WIDTH // 2 -95, 250))
+
+        self.back_to_menu_rect = self.back_to_menu_text.get_rect(center=(Config.WIDTH // 2 + 5, 250))
+
         self.resume_text = self.game_font.render("RESUME", True, (255, 255, 255))
-        self.resume_rect = self.pause_text.get_rect(center=(Config.WIDTH // 2 , 355))
+
+        self.resume_rect = self.resume_text.get_rect(center=(Config.WIDTH // 2 , 355))
 
         #Player settings:
         self.m_width = 50
