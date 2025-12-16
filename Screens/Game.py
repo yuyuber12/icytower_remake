@@ -26,9 +26,11 @@ class Game:
         self.font = pygame.font.Font("Fonts/Smasher 312 Custom.ttf", 25)
         self.overlay = pygame.Surface((Config.WIDTH, Config.HEIGHT), pygame.SRCALPHA)
         self.pause_text = self.font.render("PAUSED", True, (255, 255, 255))
-        self.pause_rect = self.pause_text.get_rect(center=(Config.WIDTH // 2, 200))
-        self.back_to_menu_text = self.font.render("BACK", True, (255, 255, 255))
-        self.back_to_menu_rect = self.pause_text.get_rect(center=(Config.WIDTH // 2 + 50, 250))
+        self.pause_rect = self.pause_text.get_rect(center=(Config.WIDTH // 2, 50))
+        self.back_to_menu_text = self.font.render("BACK TO MENU", True, (255, 255, 255))
+        self.back_to_menu_rect = self.pause_text.get_rect(center=(Config.WIDTH // 2 -50, 250))
+        self.resume_text = self.font.render("RESUME", True, (255, 255, 255))
+        self.resume_rect = self.pause_text.get_rect(center=(Config.WIDTH // 2 , 355))
 
         #Player settings:
         self.m_width = 50
@@ -64,6 +66,8 @@ class Game:
                     if self.is_paused and event.button == 1:
                         if self.back_to_menu_rect.collidepoint(pygame.mouse.get_pos()):
                             return "back_to_menu"  # ← מחזיר ערך
+                        if self.resume_rect.collidepoint(pygame.mouse.get_pos()):
+                           self.is_paused = not self.is_paused
 
 
             # if not self.is_paused:
@@ -98,6 +102,8 @@ class Game:
         self.m_screen_two.blit(self.overlay, (0, 0))
         self.m_screen_two.blit(self.pause_text, self.pause_rect)
         self.m_screen_two.blit(self.back_to_menu_text, self.back_to_menu_rect)
+        self.m_screen_two.blit(self.resume_text, self.resume_rect)
+
 
 
         # pg.quit()

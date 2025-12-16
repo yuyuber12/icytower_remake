@@ -50,14 +50,6 @@ class Menu:
         # Background Color
         self.m_screen_one.fill((30, 30, 30))
 
-
-
-
-
-
-
-
-
         self.m_screen_one.blit(self.play_game_text, self.play_game_rect)
         self.m_screen_one.blit(self.instructions_text,
                                ((self.m_screen_one.get_width() / 2 - 100) - (self.play_game_text.get_width() / 2 - 200), 145))
