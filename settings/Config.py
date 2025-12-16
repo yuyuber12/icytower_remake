@@ -10,5 +10,5 @@ CLOCK = pygame.time.Clock()
 DARK_COLOR = (245, 245, 245)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-CURRENT_FONT = pygame.font.Font("Fonts/Broom.ttf", 50)
+CURRENT_FONT = pygame.font.Font("Fonts/chunky font.ttf", 50)
 
