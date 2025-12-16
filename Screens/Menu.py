@@ -8,7 +8,7 @@ class Menu:
     def __init__(self, i_screen: Surface):
         self.m_screen_one = i_screen
         self.m_is_menu_running = True
-        self.background_image = pygame.image.load("/Images/Pixel Brick Wall Vector Image.png")
+        self.background_image = pygame.image.load("Images/PixelBrickWallVectorImage.png")
         self.background_image = pygame.transform.scale(self.background_image, (Config.WIDTH, Config.HEIGHT))
         self.font = pygame.font.Font("Fonts/Smasher 312 Custom.ttf", 25)
         self.play_game_text = self.font.render("PLAY GAME", True, Config.BLACK)
