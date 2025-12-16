@@ -23,13 +23,13 @@ class Game:
         self.keys = pygame.key.get_pressed()
         self.m_is_game_running = True
         self.is_paused = False
-        self.font = pygame.font.Font("Fonts/Smasher 312 Custom.ttf", 25)
+        self.game_font = Config.CURRENT_FONT
         self.overlay = pygame.Surface((Config.WIDTH, Config.HEIGHT), pygame.SRCALPHA)
-        self.pause_text = self.font.render("PAUSED", True, (255, 255, 255))
+        self.pause_text = self.game_font.render("PAUSED", True, (255, 255, 255))
         self.pause_rect = self.pause_text.get_rect(center=(Config.WIDTH // 2, 50))
-        self.back_to_menu_text = self.font.render("BACK TO MENU", True, (255, 255, 255))
-        self.back_to_menu_rect = self.pause_text.get_rect(center=(Config.WIDTH // 2 -50, 250))
-        self.resume_text = self.font.render("RESUME", True, (255, 255, 255))
+        self.back_to_menu_text = self.game_font.render("BACK TO MENU", True, (255, 255, 255))
+        self.back_to_menu_rect = self.pause_text.get_rect(center=(Config.WIDTH // 2 -95, 250))
+        self.resume_text = self.game_font.render("RESUME", True, (255, 255, 255))
         self.resume_rect = self.pause_text.get_rect(center=(Config.WIDTH // 2 , 355))
 
         #Player settings:

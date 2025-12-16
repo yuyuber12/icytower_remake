@@ -8,10 +8,10 @@ class Menu:
     def __init__(self, i_screen: Surface):
         self.m_screen_one = i_screen
         self.m_is_menu_running = True
-        self.background_image = pygame.image.load("Images/menubg (1).png")
+        self.background_image = pygame.image.load("Menu_images/MenuBG.png")
         self.background_image = pygame.transform.scale(self.background_image, (Config.WIDTH, Config.HEIGHT))
-        self.font = pygame.font.Font("Fonts/Smasher 312 Custom.ttf", 25)
-        self.play_game_text = self.font.render("PLAY GAME", True, Config.BLACK)
+        self.menu_font = Config.CURRENT_FONT
+        self.play_game_text = self.menu_font.render("PLAY GAME", True, Config.BLACK)
         self.play_game_text_x = (self.m_screen_one.get_width() / 2 - 100) - (self.play_game_text.get_width() / 2 - 200)
         self.play_game_text_y = 75
         self.play_game_rect = self.play_game_text.get_rect(topleft=(self.play_game_text_x, self.play_game_text_y))
@@ -19,8 +19,8 @@ class Menu:
                                         # ^
                                         # |
         # Todo # self.play_game_rect לכתוב את כל המשתנים האלה מחדש ולפרק אותם כמו
-        self.instructions_text = self.font.render("INSTRUCTIONS", True, Config.BLACK)
-        self.exit_text = self.font.render("EXIT", True, Config.BLACK)
+        self.instructions_text = self.menu_font.render("INSTRUCTIONS", True, Config.BLACK)
+        self.exit_text = self.menu_font.render("EXIT", True, Config.BLACK)
         # Todo # self.play_game_rect לכתוב את כל המשתנים האלה מחדש ולפרק אותם כמו
         #TODO # להוסיף רקע למשחק
         #TODO # להויסף לחיצות לכפתורים
