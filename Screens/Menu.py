@@ -43,6 +43,12 @@ class Menu:
                             self.m_is_menu_running = False
 
 
+                  #TODO לשים את התמונה של האצבע עם חץ
+                #if event.type == pygame.KEYDOWN:
+                 #   if event.key == pygame.K_DOWN:
+                  #      if self.play_game_rect.collidepoint(pygame.mouse.get_pos()):
+
+
 
                         # if self.m_screen_one.get_width() // 2 - self.play_game_text.get_width() // 2 <= mouse_pos_y <= 200:
                         #     self.m_is_menu_running = False
