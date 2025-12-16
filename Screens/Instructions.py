@@ -1,0 +1,51 @@
+import pygame
+from Screens import Game
+from pygame import Surface
+from settings import Config
+
+pygame.init()
+
+class Instructions:
+    def __init__(self, i_screen: Surface):
+        self.m_screen_three = i_screen
+        self.m_is_instructions_running = True
+
+        self.game_font = Config.CURRENT_FONT
+        self.background_image_on_instruction = pygame.image.load("Menu_images/MenuBG.jpg")
+        self.instructions_image = pygame.image.load("Menu_images/SpaceBar.png")
+        self.back_to_menu_text = self.game_font.render("BACK TO MENU", True, Config.BLACK)
+        self.back_to_menu_rect = self.back_to_menu_text.get_rect(center=(Config.WIDTH // 2 + 5,450))
+
+    def run(self):
+
+        while self.m_is_instructions_running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return "exit"
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        return "back_to_menu_from_instructions"
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        if self.back_to_menu_rect.collidepoint(pygame.mouse.get_pos()):
+                            return "back_to_menu_from_instructions"
+
+            self.display_game()
+
+
+            pygame.display.update()
+            Config.CLOCK.tick(Config.FPS)
+
+        return None
+
+    def display_game(self):
+        # Background Color
+
+        self.m_screen_three.blit(self.background_image_on_instruction, (0, 0))
+        self.m_screen_three.blit(self.instructions_image , (0 ,0))
+        self.m_screen_three.blit(self.back_to_menu_text, self.back_to_menu_rect)
+
+
+
+
+

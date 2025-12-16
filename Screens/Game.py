@@ -24,16 +24,16 @@ class Game:
         self.m_is_game_running = True
         self.is_paused = False
         self.game_font = Config.CURRENT_FONT
-        self.overlay = pygame.Surface((Config.WIDTH, Config.HEIGHT), pygame.SRCALPHA)
-        self.pause_text = self.game_font.render("PAUSED", True, (255, 255, 255))
+        self.overlay = pygame.image.load("Menu_images/MenuBG.jpg")
+        self.pause_text = self.game_font.render("PAUSED", True, Config.BLACK)
 
         self.pause_rect = self.pause_text.get_rect(center=(Config.WIDTH // 2, 50))
 
-        self.back_to_menu_text = self.game_font.render("BACK TO MENU", True, (255, 255, 255))
+        self.back_to_menu_text = self.game_font.render("BACK TO MENU", True, Config.BLACK)
 
         self.back_to_menu_rect = self.back_to_menu_text.get_rect(center=(Config.WIDTH // 2 + 5, 250))
 
-        self.resume_text = self.game_font.render("RESUME", True, (255, 255, 255))
+        self.resume_text = self.game_font.render("RESUME", True, Config.BLACK)
 
         self.resume_rect = self.resume_text.get_rect(center=(Config.WIDTH // 2 , 355))
 
@@ -102,8 +102,6 @@ class Game:
 
     def display_pause_overlay(self):
 
-        self.overlay.fill((20, 20, 20, 180))
-        self.m_screen_two.blit(self.overlay, (0, 0))
         self.m_screen_two.blit(self.overlay, (0, 0))
         self.m_screen_two.blit(self.pause_text, self.pause_rect)
         self.m_screen_two.blit(self.back_to_menu_text, self.back_to_menu_rect)

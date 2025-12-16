@@ -2,6 +2,7 @@
 
 import pygame
 from Screens.Game import Game
+from Screens.Instructions import Instructions
 from Screens.Menu import Menu
 from settings import Config
 
@@ -13,7 +14,7 @@ if __name__ == "__main__":
         game = Game(screen, menu)
 
         result_Menu = menu.run()
-        if result_Menu == "exit":
+        if result_Menu == "exit" :
             break  # יוצאים מהלולאה ומסיימים את התוכנית
 
         result_Game = game.run()
