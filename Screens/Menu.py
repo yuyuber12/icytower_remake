@@ -1,5 +1,5 @@
 import pygame
-from Logic.Game import Game
+from Screens import Game
 from pygame import Surface
 from settings import Config
 
@@ -30,8 +30,7 @@ class Menu:
         while self.m_is_menu_running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.m_is_menu_running = False
-
+                    return "exit"
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         mouse_pos_x, mouse_pos_y = pygame.mouse.get_pos()
