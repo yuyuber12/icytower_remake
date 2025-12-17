@@ -32,7 +32,7 @@ class Menu:
         self.instructions_rect = self.instructions_text.get_rect(topleft=(self.instructions_text_x ,self.instructions_text_y))
 
         self.exit_text = self.menu_font.render("EXIT", True, Config.BLACK)
-        self.exit_text_x = (self.m_screen_one.get_width() / 2 - 100) - (self.exit_text.get_width() / 2 - 200)
+        self.exit_text_x = (self.m_screen_one.get_width() / 2 - 100) - (self.exit_text.get_width() / 2 - 100)
         self.exit_text_y = 245
         self.exit_rect = self.exit_text.get_rect(topleft=(self.exit_text_x, self.exit_text_y))
 
@@ -110,9 +110,9 @@ class Menu:
         self.m_screen_one.blit(self.background_image, (0, 0))
         # self.m_screen_one.blit(self.logo_image, (5, 80))
         self.m_screen_one.blit(self.paper_image, (270, 55))
+
         self.m_screen_one.blit(self.play_game_text, self.play_game_rect)
         self.m_screen_one.blit(self.instructions_text,((self.m_screen_one.get_width() / 2 - 100) - (self.play_game_text.get_width() / 2 - 200), 145))
-        self.m_screen_one.blit(self.exit_text,((self.m_screen_one.get_width() / 2- 100) - (self.exit_text.get_width() / 2 - 140), 235))
-        
+        self.m_screen_one.blit(self.exit_text,((self.m_screen_one.get_width() / 2 + 5) - (self.exit_text.get_width() / 2 + 5), 245))
 
 
