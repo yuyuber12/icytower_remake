@@ -52,9 +52,14 @@ class Game:
         self.platform_border_radius = 2
         self.platform_x = random.randint(0, 140)
         self.platform_y = random.randint(200, 400)
+        # -------------------------------------------ללמוד אתזה---------------------
+        self.pause_items = [
+            {"text": "RESUME", "rect": self.resume_rect, "action": "resume"},
+            {"text": "BACK TO MENU", "rect": self.back_to_menu_rect, "action": "back_to_menu"}
+        ]
 
-
-
+        self.selected_index = 0  # הכפתור הנבחר כרגע
+        # -------------------------------------------ללמוד אתזה---------------------
         #Objects:
         self.m_player: Player = Player((Config.WIDTH / 2), (Config.HEIGHT / 2), self.m_width, self.m_height, (60, 170, 220), self.m_border_radius)
         self.m_platform: Platforms = Platforms (self.platform_x  ,self.platform_y  , self.platform_width ,self.platform_height , (60, 170, 220), self.platform_border_radius )
@@ -73,10 +78,22 @@ class Game:
                             return "back_to_menu"  # ← מחזיר ערך
                         if self.resume_rect.collidepoint(pygame.mouse.get_pos()):
                            self.is_paused = not self.is_paused
-
-
-            # if not self.is_paused:
-            #     pass
+                # -------------------------------------------ללמוד אתזה---------------------
+                # if event.type == pygame.KEYDOWN:
+                #     if event.key == pygame.K_ESCAPE:
+                #         self.is_paused = not self.is_paused
+                #     if self.is_paused:
+                #         if event.key == pygame.K_DOWN:
+                #             self.selected_index = (self.selected_index + 1) % len(self.pause_items)
+                #         elif event.key == pygame.K_UP:
+                #             self.selected_index = (self.selected_index - 1) % len(self.pause_items)
+                #         elif event.key == pygame.K_RETURN:
+                #             action = self.pause_items[self.selected_index]["action"]
+                #             if action == "resume":
+                #                 self.is_paused = False
+                #             elif action == "back_to_menu":
+                #                 return "back_to_menu"
+                # -------------------------------------------ללמוד אתזה---------------------
 
             # -------------------תנועה לפי מקשים----------------
             if self.keys[pygame.K_LEFT]:
@@ -106,6 +123,11 @@ class Game:
         self.m_screen_two.blit(self.pause_text, self.pause_rect)
         self.m_screen_two.blit(self.back_to_menu_text, self.back_to_menu_rect)
         self.m_screen_two.blit(self.resume_text, self.resume_rect)
+
+        # for i, item in enumerate(self.pause_items):
+        #     color = (200, 200, 200) if i == self.selected_index else Config.BLACK
+        #     text_surface = self.game_font.render(item["text"], True, color)
+        #     self.m_screen_two.blit(text_surface, item["rect"])
 
 
 
