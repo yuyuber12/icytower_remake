@@ -17,7 +17,7 @@ class Menu:
         # self.logo_image = pygame.image.load("Menu_images/LogoMenu.png")
         # self.logo_image = pygame.transform.scale(self.logo_image, ((Config.WIDTH // 2  + 50), (Config.HEIGHT // 2 + 100)))
         self.paper_image = pygame.image.load("Menu_images/paper.png")
-        self.paper_image = pygame.transform.scale(self.paper_image, ((Config.WIDTH // 2 ) , (Config.HEIGHT// 2 )))
+        self.paper_image = pygame.transform.scale(self.paper_image, ((Config.WIDTH // 2 ) , (Config.HEIGHT// 2 + 30 )))
         self.instructions_image = pygame.image.load("Menu_images/SpaceBar.png")
         self.menu_font = Config.CURRENT_FONT
 
@@ -27,13 +27,13 @@ class Menu:
         self.play_game_rect = self.play_game_text.get_rect(topleft=(self.play_game_text_x, self.play_game_text_y))
 
         self.instructions_text = self.menu_font.render("INSTRUCTIONS", True, Config.BLACK)
-        self.instructions_text_x = (self.m_screen_one.get_width() / 2 - 100) - (self.instructions_text.get_width() / 2 - 200)
+        self.instructions_text_x = (self.m_screen_one.get_width() / 2 - 100) - (self.instructions_text.get_width() / 2 - 220)
         self.instructions_text_y = 160
         self.instructions_rect = self.instructions_text.get_rect(topleft=(self.instructions_text_x ,self.instructions_text_y))
 
         self.exit_text = self.menu_font.render("EXIT", True, Config.BLACK)
-        self.exit_text_x = (self.m_screen_one.get_width() / 2 - 100) - (self.exit_text.get_width() / 2 - 100)
-        self.exit_text_y = 245
+        self.exit_text_x = (self.m_screen_one.get_width() / 2 - 100) - (self.exit_text.get_width()// 2  -150)
+        self.exit_text_y = 240
         self.exit_rect = self.exit_text.get_rect(topleft=(self.exit_text_x, self.exit_text_y))
 
                                         # ^
@@ -46,8 +46,8 @@ class Menu:
         #TODO # להויסף לחיצות לכפתורים`
         #TODO #
         #Finger x , y
-        self.finger_x = self.play_game_rect.left - Config.FINGER_IMAGE.get_width()  - 15
-        self.finger_y = self.play_game_rect.centery - Config.FINGER_IMAGE.get_height() // 2  + 15
+        self.finger_x = self.play_game_rect.left - Config.FINGER_IMAGE.get_width()  - 10
+        self.finger_y = self.play_game_rect.centery - Config.FINGER_IMAGE.get_height() // 2  + 10
 
     def run(self):
         while self.m_is_menu_running:
@@ -91,11 +91,11 @@ class Menu:
                 self.m_screen_one.blit(Config.FINGER_IMAGE, (self.finger_x, self.finger_y))
 
             if is_hover_on_instructions_rect:
-                self.finger_y = self.instructions_rect.centery - Config.FINGER_IMAGE.get_height()//2 - 10
+                self.finger_y = self.instructions_rect.centery - Config.FINGER_IMAGE.get_height()//2 + 10
                 self.m_screen_one.blit(Config.FINGER_IMAGE, (self.finger_x, self.finger_y))
 
             if is_hover_on_exit_rect:
-                self.finger_y = self.exit_rect.centery - Config.FINGER_IMAGE.get_height() // 2 - 10
+                self.finger_y = self.exit_rect.centery - Config.FINGER_IMAGE.get_height() // 2 + 10
                 self.m_screen_one.blit(Config.FINGER_IMAGE, (self.finger_x, self.finger_y))
 
             pygame.display.update()
@@ -112,7 +112,7 @@ class Menu:
         self.m_screen_one.blit(self.paper_image, (270, 55))
 
         self.m_screen_one.blit(self.play_game_text, self.play_game_rect)
-        self.m_screen_one.blit(self.instructions_text,((self.m_screen_one.get_width() / 2 - 100) - (self.play_game_text.get_width() / 2 - 200), 145))
-        self.m_screen_one.blit(self.exit_text,((self.m_screen_one.get_width() / 2 + 5) - (self.exit_text.get_width() / 2 + 5), 245))
+        self.m_screen_one.blit(self.instructions_text,self.instructions_rect)
+        self.m_screen_one.blit(self.exit_text,self.exit_rect)
 
 

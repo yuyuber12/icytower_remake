@@ -12,9 +12,11 @@ class Instructions:
 
         self.game_font = Config.CURRENT_FONT
         self.background_image_on_instruction = pygame.image.load("Menu_images/MenuBG.jpg")
-        self.instructions_image = pygame.image.load("Menu_images/SpaceBar.png")
+        self.instructions_image = pygame.image.load("Instructions_images/keys.png")
+        self.instructions_image = pygame.transform.scale(self.instructions_image, (Config.WIDTH // 2 - 10, Config.HEIGHT// 2 - 10))
+        self.instructions_text =self.game_font.render("USE SPACEBAR AND ARROWS TO PLAY", True, Config.WHITE)
         self.back_to_menu_text = self.game_font.render("BACK TO MENU", True, Config.BLACK)
-        self.back_to_menu_rect = self.back_to_menu_text.get_rect(center=(Config.WIDTH // 2 + 5,450))
+        self.back_to_menu_rect = self.back_to_menu_text.get_rect(center=(Config.WIDTH // 2 + 5, 450))
 
     def run(self):
 
@@ -42,7 +44,8 @@ class Instructions:
         # Background Color
 
         self.m_screen_three.blit(self.background_image_on_instruction, (0, 0))
-        self.m_screen_three.blit(self.instructions_image , (0 ,0))
+        self.m_screen_three.blit(self.instructions_image , (5 ,270))
+        self.m_screen_three.blit(self.instructions_text, (10, 300))
         self.m_screen_three.blit(self.back_to_menu_text, self.back_to_menu_rect)
 
 
