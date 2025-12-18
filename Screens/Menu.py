@@ -113,6 +113,6 @@ class Menu:
 
         self.m_screen_one.blit(self.play_game_text, self.play_game_rect)
         self.m_screen_one.blit(self.instructions_text,self.instructions_rect)
-        self.m_screen_one.blit(self.exit_text,self.exit_rect)
+        self.m_screen_one.blit(self.exit_text,self.exit_rect)34
 
 
