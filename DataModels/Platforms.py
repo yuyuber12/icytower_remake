@@ -11,7 +11,7 @@ class Platforms(GameObject) :
         self._color = color
 
         # Instance:
-        self.platform_rect = pg.Rect(platform_x, platform_y, platform_width, platform_height)
+        self.platform_rect: pg.Rect = pg.Rect(platform_x, platform_y, platform_width, platform_height)
 
     def draw(self, window: Surface):
         pg.draw.rect(window, self._color, self.platform_rect)

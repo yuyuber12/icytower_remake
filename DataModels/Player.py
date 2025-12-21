@@ -10,8 +10,9 @@ class Player(GameObject):
        self._border_radius = border_radius
        self._color = color
 
+
        #Instance:
-       self.player_rect : pg.Rect = pg.Rect(self._width_position, self._height_position , self._player_width , self._player_height)
+       self.player_rect: pg.Rect = pg.Rect(width_position, height_position, player_width, player_height)
 
     def draw(self , window: Surface):
         pg.draw.rect(window, self._color, self.player_rect)
