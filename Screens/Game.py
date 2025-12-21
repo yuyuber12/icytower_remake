@@ -56,11 +56,11 @@ class Game:
         self.scroll_line = 100
 
         #Platforms settings:
-        self.platform_width = 120
-        self.platform_height = 16
+        self. platform_width = 120
+        self.platform_height = 20
         self.platform_border_radius = 2
         self.platform_x = 0
-        self.platform_y = Config.HEIGHT- 20
+        self.platform_y = Config.HEIGHT- 19
         #x_ = random.randint(0, 140)
         #y_ = random.randint(200, 400)
 
@@ -76,15 +76,14 @@ class Game:
         #Objects:
         self.m_player: Player = Player((Config.WIDTH / 2), (Config.HEIGHT / 2), self.m_width, self.m_height, (60, 170, 220), self.m_border_radius)
         self.m_platform: Platforms = Platforms (random.randint(0, 140)  ,random.randint(200, 400)  , self.platform_width ,self.platform_height , (60, 170, 220), self.platform_border_radius )
-        self.m_platform_rect = pygame.Rect((random.randint(0 , 240)),(random.randint(200, 400)), self.platform_height, 16)
-        self.m_player_rect = pygame.Rect((Config.WIDTH / 2), (Config.HEIGHT / 2), self.m_width, self.m_height)
-        self.first_platform: Platforms = Platforms(self.platform_x, self.platform_y, self.platform_width,self.platform_height, (60, 170, 220), self.platform_border_radius)
-        self.platforms = None
+        # self.m_platform_rect = pygame.Rect((random.randint(0 , 240)),(random.randint(200, 400)), self.platform_height, 16)
+        # self.m_player_rect = pygame.Rect((Config.WIDTH / 2), (Config.HEIGHT / 2), self.m_width, self.m_height)
+        self.first_platform: Platforms = Platforms(self.platform_x, self.platform_y, Config.WIDTH,self.platform_height, (200, 130, 190), self.platform_border_radius)
+        # self.platforms = None
 
     def run(self):
 
         while self.m_is_game_running:
-            self.keys = pygame.key.get_pressed()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.m_is_game_running = False
@@ -101,73 +100,73 @@ class Game:
 
                 # -------------------------------------------ללמוד אתזה---------------------
 
-            # -------------------תנועה לפי מקשים----------------
-            if self.keys[pygame.K_LEFT]:
-                self.m_step_x -= self.m_speed
-            if self.keys[pygame.K_RIGHT]:
-                self.m_step_x += self.m_speed
-
-            self.platforms = [
-                self.m_platform_rect,
-                self.m_platform_rect,
-                self.m_platform_rect
-
-
-            ]
-            self.m_player_rect.x = self.m_step_x
-
-            for each_rect in self.platforms:
-                if self.m_player_rect.colliderect(each_rect):
-                    if self.m_step_x > 0:
-                        self.m_player_rect.right = each_rect.left
-                    elif self.m_step_x < 0:
-                        self.m_player_rect.left = each_rect.right
-
-            self.m_step_y += self.velocity_y
-            self.velocity_y += self.gravity
-            self.m_player_rect.y += self.m_step_y
-
-            on_ground = False
-            for each_rect in self.platforms:
-                if self.m_player_rect.colliderect(each_rect):
-                    if self.m_step_y > 0:
-                        self.m_player_rect.bottom = each_rect.top
-                        self.velocity_y = 0
-                        on_ground = True
-                    elif self.m_step_y < 0:
-                        self.m_player_rect.top = each_rect.bottom
-                        self.velocity_y = 0
-
-            # קפיצה
-            if on_ground and self.keys[pygame.K_SPACE]:
-                self.velocity_y = self.jump_speed_gravity
-
-            # --------- גלילת נפילה (שומר על השחקן בפריים בזמן ירידה) ----------
-            if self.m_player_rect.bottom > self.fall_line and self.m_step_y > 0:
-                scroll = self.m_player_rect.bottom - self.fall_line
-                self.m_player_rect.bottom = self.fall_line
-                for plat in self.platforms:
-                    plat.y -= scroll
-
-            # --------- גלילת עלייה (כשעולים מעל קו הגלילה) ----------
-            if  self.m_player_rect.top < self.scroll_line and self.m_step_y < 0:
-                scroll = self.scroll_line -  self.m_player_rect.top
-                self.m_player_rect.top = self.scroll_line
-                for each_rect in self.platforms:
-                    each_rect.y += scroll
-
-            # סינון פלטפורמות שנפלו מתחת למסך (אופציונלי)
-            platforms_onthescreen = []
-            for each_rect in self.platforms:
-                if each_rect.top < Config.HEIGHT:
-                    platforms_onthescreen.append(each_rect)
-            platforms = platforms_onthescreen
-
-            # -------------------תיקון גבולות (רק X!)-------------------
-            if  self.m_player_rect.left < 0:
-                self.m_player_rect.left = 0
-            if  self.m_player_rect.right > Config.WIDTH:
-                self.m_player_rect.right = Config.WIDTH
+            # # -------------------תנועה לפי מקשים----------------
+            # if self.keys[pygame.K_LEFT]:
+            #     self.m_step_x -= self.m_speed
+            # if self.keys[pygame.K_RIGHT]:
+            #     self.m_step_x += self.m_speed
+            #
+            # self.platforms = [
+            #     self.m_platform_rect,
+            #     self.m_platform_rect,
+            #     self.m_platform_rect
+            #
+            #
+            # ]
+            # self.m_player_rect.x = self.m_step_x
+            #
+            # for each_rect in self.platforms:
+            #     if self.m_player_rect.colliderect(each_rect):
+            #         if self.m_step_x > 0:
+            #             self.m_player_rect.right = each_rect.left
+            #         elif self.m_step_x < 0:
+            #             self.m_player_rect.left = each_rect.right
+            #
+            # self.m_step_y += self.velocity_y
+            # self.velocity_y += self.gravity
+            # self.m_player_rect.y += self.m_step_y
+            #
+            # on_ground = False
+            # for each_rect in self.platforms:
+            #     if self.m_player_rect.colliderect(each_rect):
+            #         if self.m_step_y > 0:
+            #             self.m_player_rect.bottom = each_rect.top
+            #             self.velocity_y = 0
+            #             on_ground = True
+            #         elif self.m_step_y < 0:
+            #             self.m_player_rect.top = each_rect.bottom
+            #             self.velocity_y = 0
+            #
+            # # קפיצה
+            # if on_ground and self.keys[pygame.K_SPACE]:
+            #     self.velocity_y = self.jump_speed_gravity
+            #
+            # # --------- גלילת נפילה (שומר על השחקן בפריים בזמן ירידה) ----------
+            # if self.m_player_rect.bottom > self.fall_line and self.m_step_y > 0:
+            #     scroll = self.m_player_rect.bottom - self.fall_line
+            #     self.m_player_rect.bottom = self.fall_line
+            #     for plat in self.platforms:
+            #         plat.y -= scroll
+            #
+            # # --------- גלילת עלייה (כשעולים מעל קו הגלילה) ----------
+            # if  self.m_player_rect.top < self.scroll_line and self.m_step_y < 0:
+            #     scroll = self.scroll_line -  self.m_player_rect.top
+            #     self.m_player_rect.top = self.scroll_line
+            #     for each_rect in self.platforms:
+            #         each_rect.y += scroll
+            #
+            # # סינון פלטפורמות שנפלו מתחת למסך (אופציונלי)
+            # platforms_onthescreen = []
+            # for each_rect in self.platforms:
+            #     if each_rect.top < Config.HEIGHT:
+            #         platforms_onthescreen.append(each_rect)
+            # platforms = platforms_onthescreen
+            #
+            # # -------------------תיקון גבולות (רק X!)-------------------
+            # if  self.m_player_rect.left < 0:
+            #     self.m_player_rect.left = 0
+            # if  self.m_player_rect.right > Config.WIDTH:
+            #     self.m_player_rect.right = Config.WIDTH
 
 
 
@@ -186,8 +185,8 @@ class Game:
         self.m_screen_two.blit(self.background_image_game, (0, 0))
         # Display Game Objects
         self.first_platform.draw(self.m_screen_two)
-        for each_rect in self.platforms:
-            pygame.draw.rect(self.m_screen_two, (60, 170, 220), each_rect)
+        # for each_rect in self.platforms:
+        #     pygame.draw.rect(self.m_screen_two, (60, 170, 220), each_rect)
         self.m_player.draw(self.m_screen_two)
 
 
