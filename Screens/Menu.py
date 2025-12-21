@@ -44,12 +44,7 @@ class Menu:
         self.selected_index = 0  # הכפתור שנבחר כרגע
         self.using_keyboard = False  # False = עכבר, True = מקלדת
 
-        # Pause items
-        self.pause_items = [
-            {"text": "RESUME", "action": "resume"},
-            {"text": "MAIN MENU", "action": "menu"},
-            {"text": "EXIT", "action": "exit"}
-        ]
+
 
         # Finger position
         self.finger_x = self.play_game_rect.left - Config.FINGER_IMAGE.get_width() - 10
@@ -64,7 +59,7 @@ class Menu:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         mouse_pos = pygame.mouse.get_pos()
-                        # -------------------------------------------ללמוד אתזה---------------------
+                # -------------------------------------------ללמוד אתזה---------------------
                         for item in self.menu_items:
                             if item["rect"].collidepoint(mouse_pos):
                                 action = item["action"]
@@ -76,7 +71,7 @@ class Menu:
                                     instructions.run()
                                 elif action == "exit":
                                     return "exit"
-                        # -------------------------------------------ללמוד אתזה---------------------
+                # -------------------------------------------ללמוד אתזה---------------------
                 # Keyboard navigation
                 # -------------------------------------------ללמוד אתזה---------------------
                 if event.type == pygame.KEYDOWN:

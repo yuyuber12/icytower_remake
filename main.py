@@ -17,7 +17,7 @@ def main():
     gravity = 0.8
     jump_speedgravity = -16
 
-    scroll_line = 200
+    scroll_line = 100
     fall_line = 200
 
     target_ofplatforms = 6
