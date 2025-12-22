@@ -18,6 +18,7 @@ class Game:
         self.m_is_game_running = True
         self.is_paused = False
         self.game_font = Config.CURRENT_FONT
+        self.game_font_bigger = Config.CURRENT_FONT_BIGGER
         self.overlay = pygame.image.load("Menu_images/MenuBG.jpg")
         self.background_image_game = pygame.image.load("Game_images/Game_BG.jpg")
         self.background_image_game  = pygame.transform.scale(self.background_image_game , (Config.WIDTH , Config.HEIGHT))
@@ -30,8 +31,8 @@ class Game:
         self.resume_rect = self.resume_text.get_rect(center=(Config.WIDTH // 2 , 355))
 
         self.game_over = False
-        self.game_over_text = self.game_font.render("GAME OVER", True, (255, 0, 0))
-        self.game_over_rect = self.game_over_text.get_rect(center=(Config.WIDTH // 2, 150))
+        self.game_over_text = self.game_font_bigger.render("GAME OVER", True, (255, 0, 0))
+        self.game_over_rect = self.game_over_text.get_rect(center=(Config.WIDTH // 2, 100))
 
         self.retry_text = self.game_font.render("RETRY", True, (255, 255, 255))
         self.retry_rect = self.retry_text.get_rect(center=(Config.WIDTH // 2, 250))
@@ -55,7 +56,7 @@ class Game:
 
         # Platforms settings
         self.platform_width = 120
-        self.platform_height = 20
+        self.platform_height = 40
         self.platform_border_radius = 2
         self.platform_x = 0
         self.platform_y = Config.HEIGHT- 19
@@ -91,8 +92,8 @@ class Game:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.is_paused = not self.is_paused
-                    elif event.key == pygame.K_r:  # R לאיפוס המשחק
-                        self.__init__(self.m_screen_two, self.menu)
+                    # elif event.key == pygame.K_r:  # R לאיפוס המשחק
+                    #     self.__init__(self.m_screen_two, self.menu)
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.is_paused and event.button == 1:
                         if self.retry_rect.collidepoint(pygame.mouse.get_pos()):
