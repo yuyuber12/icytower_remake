@@ -3,7 +3,7 @@ import pygame
 #Game settings:
 pygame.init()
 WIDTH = 720
-HEIGHT = 480
+HEIGHT = 520
 FPS = 60
 CLOCK = pygame.time.Clock()
 
