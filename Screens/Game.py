@@ -55,7 +55,7 @@ class Game:
         self.scroll_line = 100
 
         # Platforms settings
-        self.platform_width = 120
+        self.platform_width = 80
         self.platform_height = 40
         self.platform_border_radius = 2
         self.platform_x = 0
@@ -169,19 +169,19 @@ class Game:
                     self.velocity_y = 0
                     self.on_ground = True
 
-            # עכשיו מעדכנים את המיקום של השחקן
+            #  מעדכנים את המיקום של השחקן
             self.y = next_y
 
             # יצירת פלטפורמות חדשות אם השחקן מתקרב לראש המסך
             if self.platforms:
                 highest_y = min([plat.platform_rect.top for plat in self.platforms])
                 if highest_y > 50:  # אם הפלטפורמה הגבוהה ביותר רחוקה מדי מהראש
-                    new_width = 300
+                    new_width = random.randint(50, self.platform_width)
                     new_height = 20
                     color = (200, 130, 190)
                     border_radius = 5
                     x = random.randint(0, Config.WIDTH - new_width)
-                    y = highest_y - random.randint(80, 150)
+                    y = highest_y - random.randint(50, 150)
                     new_platform = Platforms(x, y, new_width, new_height, color, border_radius)
                     self.platforms.append(new_platform)
 
@@ -311,13 +311,13 @@ class Game:
             # נוודא שהפלטפורמה החדשה לא חופפת לזו הקודמת
             gap = random.randint(min_jump, max_jump)
             y = prev_y - gap
-            x = random.randint(0, Config.WIDTH - platform_width)
+            x = random.randint(0,  platform_width)
 
             # אם הפלטפורמה החדשה גבוהה מדי או חופפת לשעבר, נדחוף אותה עוד קצת למעלה
             if self.platforms and y >= self.platforms[-1].platform_rect.bottom:
                 y = self.platforms[-1].platform_rect.top - platform_height - 10  # רווח מינימלי של 10 פיקסלים
 
-            plat = Platforms(x, y, platform_width, platform_height, color, border_radius)
+            plat = Platforms(x, y,random.randint(60, platform_width -10), platform_height, color, border_radius)
             self.platforms.append(plat)
             prev_y = y
 
