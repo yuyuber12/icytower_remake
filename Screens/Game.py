@@ -152,15 +152,34 @@ class Game:
 
             # if self.y >(self.first_platform.platform_rect):
             #     pass
-            #-----------------y_jump-----------------
-            # if self.on_ground and self.keys[pygame.K_SPACE]:
-            #     self.velocity_y = self.jump_speed_gravity
+            # -----------------y_jump-----------------
+            # 1. בדוק קפיצה
+            if self.on_ground and self.keys[pygame.K_SPACE]:
+                self.velocity_y = -self.jump_speed_gravity
+                self.on_ground = False
 
+            # 2. הוספת כוח הכבידה
+            self.velocity_y += self.gravity
+
+            # 3. עדכון מיקום Y לפי מהירות
+            self.y += self.velocity_y
+            self.update_rect()  # חשוב לעדכן את ה-rect אחרי שינוי y
+
+            self.on_ground = False  # מתחילים בהנחה שאנחנו באוויר
+            for platform in self.platforms + [self.first_platform]:
+                # רק אם השחקן יורד ומגיע על הפלטפורמה
+                if (self.m_player.player_rect.colliderect(platform.platform_rect)
+                        and self.velocity_y >= 0
+                        and self.m_player.player_rect.bottom - self.velocity_y <= platform.platform_rect.top):
+                    self.on_ground = True
+                    self.velocity_y = 0
+                    self.y = platform.platform_rect.top - self.m_player.player_rect.height
+                    self.update_rect()
+                    break
 
             # -----------------y_jump-----------------
 
 
-            self.update_rect()
             #
             # if self.y <= 0:  # הגיע לראש המסך
             #     self.next_level()
