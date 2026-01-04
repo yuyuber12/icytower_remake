@@ -68,11 +68,11 @@ class Game:
         self.m_platform_rect = pygame.Rect(0,0, self.platform_width, 16)
         self.first_platform: Platforms = Platforms(self.platform_x, self.platform_y, Config.WIDTH, self.platform_height, (200, 130, 190), self.platform_border_radius)
         self.level_number = 0
-        self.init_platforms(self.level_number)
+        # self.init_platforms(self.level_number)
         self.game_speed = 5  # מתחילים בקצב נמוך
         self.game_over = False
         self.on_ground = False
-        self.platforms = []
+        self.platforms = list()
         # self.total_fallen_platforms = 0
 
 
@@ -167,7 +167,12 @@ class Game:
             self.update_rect()  # חשוב לעדכן את ה-rect אחרי שינוי y
 
             self.on_ground = False  # מתחילים בהנחה שאנחנו באוויר
-            for platform in self.platforms + [self.first_platform]:
+            # for platform in self.platforms + [self.first_platform]:
+
+            print(self.first_platform.platform_rect.y)
+            self.platforms.append(self.first_platform)
+
+            for platform in self.platforms:
                 # רק אם השחקן יורד ומגיע על הפלטפורמה
                 if (self.m_player.player_rect.colliderect(platform.platform_rect)
                         and self.velocity_y >= 0
