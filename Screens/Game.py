@@ -153,6 +153,7 @@ class Game:
             # if self.y >(self.first_platform.platform_rect):
             #     pass
             # -----------------y_jump-----------------
+
             # 1. בדוק קפיצה
             if self.on_ground and self.keys[pygame.K_SPACE]:
                 self.velocity_y = -self.jump_speed_gravity
