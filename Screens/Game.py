@@ -6,11 +6,14 @@ from DataModels.Platforms import Platforms
 from DataModels.Player import Player
 from settings import Config
 
+# Initialize pygame objects for this module.
 pygame.init()
 
+# Define a shared large font used by the game screen.
 LARGE_FONT = pygame.font.SysFont('Corbel', 60, bold=True)
 
 
+# Manage gameplay loop, movement, camera, platforms, and score flow.
 class Game:
     STAGE_PLATFORM_COUNT = 25
     STAGE_COLORS = [
@@ -27,7 +30,9 @@ class Game:
         (120, 200, 130),
     ]
 
+    # Initialize full gameplay state, resources, and UI elements.
     def __init__(self, i_screen: Surface, menu):
+        # Configure base runtime references and state flags.
         self.keys = None
         self.m_screen_two: Surface = i_screen
         self.menu = menu
@@ -45,6 +50,7 @@ class Game:
         self.background_offset_x = 0.0
         self.background_parallax_factor = 0.2
 
+        # Build pause menu UI text surfaces.
         self.pause_text = self.game_font.render("PAUSED", True, Config.BLACK)
         self.pause_rect = self.pause_text.get_rect(
             center=(Config.WIDTH // 2, 50))
@@ -56,6 +62,7 @@ class Game:
         self.resume_rect = self.resume_text.get_rect(
             center=(Config.WIDTH // 2, 355))
 
+        # Build game-over UI text surfaces.
         self.game_over = False
         self.game_over_text = self.game_font_bigger.render(
             "GAME OVER", True, (255, 0, 0))
@@ -75,7 +82,7 @@ class Game:
         self.back_to_menu_rect_go = self.back_to_menu_text_go.get_rect(
             center=(Config.WIDTH // 2, 350))
 
-        # Player settings
+        # Configure player size, motion, physics, and camera tuning values.
         self.m_width = 50
         self.m_height = 50
         self.m_border_radius = 5
@@ -126,7 +133,7 @@ class Game:
         self.platforms_passed = 0
         self.counted_platform_ids = set()
 
-        # Platforms settings
+        # Configure platform generation and stage progression settings.
         self.platform_width = 140
         self.platform_height = 16
         self.platform_border_radius = 2
@@ -137,9 +144,10 @@ class Game:
         self.target_platforms = 12
         self.platform_counter = 2
         self.current_stage = 1
-        self.selected_index = 0  # הכפתור הנבחר כרגע
+        self.selected_index = 0
         # self.level_done = False
-        # Objects
+
+        # Create gameplay objects and generate initial platforms.
         self.m_player: Player = Player(
             self.x, self.y, self.m_width, self.m_height, (60, 170, 220), self.m_border_radius)
         self.m_platform: Platforms = Platforms(random.randint(0, 140), random.randint(
@@ -166,9 +174,11 @@ class Game:
         self.init_platforms(self.level_number)
         # self.total_fallen_platforms = 0
 
+    # Run the main game loop and handle pause/game-over/menu transitions.
     def run(self):
 
         while self.m_is_game_running:
+            # Process window, keyboard, and mouse events.
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.m_is_game_running = False
@@ -180,7 +190,7 @@ class Game:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.is_paused and event.button == 1:
                         if self.retry_rect.collidepoint(pygame.mouse.get_pos()):
-                            # אתחול המשחק מחדש
+                            # Restart current game state.
                             self.__init__(self.m_screen_two, self.menu)
                         elif self.back_to_menu_rect_go.collidepoint(pygame.mouse.get_pos()):
                             return "back_to_menu"
@@ -192,13 +202,14 @@ class Game:
                 if not self.game_over:
                     self.keys = pygame.key.get_pressed()
 
+            # Handle dedicated game-over interaction flow.
             if self.game_over:
-                # הצגת המשחק והרקע לפני game over
+                # Draw current frame state and then overlay game-over UI.
                 self.display_game()
                 self.display_game_over()
                 pygame.display.update()
 
-                # מחכים לאינטרקציה בלי לולאת while חדשה
+                # Wait for retry/menu input without creating a nested loop.
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         self.m_is_game_running = False
@@ -208,20 +219,21 @@ class Game:
                             self.__init__(self.m_screen_two, self.menu)
                         elif self.back_to_menu_rect_go.collidepoint(mouse_pos):
                             return "back_to_menu"
-                continue  # מחזירים את הלולאה הראשית כדי לא להריץ עוד עדכון
+                continue
 
-            mouse_pos = pygame.mouse.get_pos()  # מקבל את מיקום העכבר
+            # Update retry text color by current mouse hover.
+            mouse_pos = pygame.mouse.get_pos()
 
-            # בדיקה אם העכבר מעל הכפתור
             if self.retry_rect.collidepoint(mouse_pos):
-                color = (255, 100, 100)  # אדום בהיר יותר
+                color = (255, 100, 100)
             else:
-                color = (255, 255, 255)  # צבע רגיל
+                color = (255, 255, 255)
 
-            # יוצרים מחדש את הטקסט עם הצבע החדש
+            # Re-render retry text using the selected hover color.
             retry_text = self.game_font_bigger.render("RETRY", True, color)
             self.m_screen_two.blit(retry_text, self.retry_rect)
 
+            # Pause update logic and show pause overlay when paused.
             if self.is_paused:
                 self.display_game()
                 self.display_pause_overlay()
@@ -229,7 +241,7 @@ class Game:
                 Config.CLOCK.tick(Config.FPS)
                 continue
 
-            # -----------------x-----------------
+            # Read movement input and compute horizontal velocity.
             self.keys = pygame.key.get_pressed()
             player_rect = self.m_player.player_rect
             self.apply_stage_difficulty()
@@ -261,9 +273,8 @@ class Game:
 
             self.player_x += self.velocity_x
             player_rect.x = int(self.player_x)
-            # -----------------x-----------------
 
-            # --------- Screen bounds (לא יוצא מהמסך) ----------
+            # Clamp player position to horizontal screen bounds.
             if player_rect.left < 0:
                 player_rect.left = 0
                 self.player_x = float(player_rect.x)
@@ -272,14 +283,15 @@ class Game:
                 player_rect.right = Config.WIDTH
                 self.player_x = float(player_rect.x)
                 self.velocity_x = 0.0
-            # --------- Screen bounds (לא יוצא מהמסך) ----------
 
+            # Apply gravity and move player vertically.
             self.velocity_y += self.gravity
             previous_top = player_rect.top
             previous_bottom = player_rect.bottom
             self.player_y += self.velocity_y
             player_rect.y = int(self.player_y)
 
+            # Resolve landing collisions with platforms.
             self.on_ground = False
             landed_platform = None
             for platform in self.platforms:
@@ -295,6 +307,7 @@ class Game:
                     landed_platform = platform
                     break
 
+                    # Count unique landed platforms for stage progression.
             if landed_platform is not None and landed_platform is not self.first_platform:
                 landed_id = id(landed_platform)
                 if landed_id not in self.counted_platform_ids:
@@ -302,6 +315,7 @@ class Game:
                     self.platforms_passed += 1
                     self.current_stage = self.platforms_passed // self.STAGE_PLATFORM_COUNT + 1
 
+            # Apply jump impulse with run-up and momentum bonuses.
             if self.on_ground and self.keys[pygame.K_SPACE]:
                 momentum_factor = min(
                     1.0, abs(self.velocity_x) / self.max_move_speed)
@@ -316,15 +330,17 @@ class Game:
                 self.runup_charge *= 0.35
                 self.on_ground = False
 
+            # Scroll world while ascending and generate platforms above.
             if player_rect.top < self.scroll_line and self.velocity_y < 0:
                 scroll = self.scroll_line - player_rect.top
                 scroll *= self.scroll_speed_factor
                 player_rect.top = self.scroll_line
                 self.player_y = float(player_rect.y)
                 self.apply_world_scroll(scroll)
-                self.ensure_platforms()  # יצירת פלטפורמות חדשות רק כשעולים למעלה!
+                self.ensure_platforms()
                 self.fall_distance_tracked = 0.0
 
+            # Scroll world while descending near the bottom camera line.
             if player_rect.bottom > self.camera_bottom_line and self.velocity_y > 0:
                 down_scroll = player_rect.bottom - self.camera_bottom_line
                 player_rect.bottom = self.camera_bottom_line
@@ -335,14 +351,16 @@ class Game:
             if self.on_ground:
                 self.fall_distance_tracked = 0.0
 
+            # Apply camera pressure behavior for prolonged idle states.
             self.apply_camera_pressure(move_dir)
 
+            # Keep only relevant platforms and update crumble timer.
             self.platforms = [
                 plat for plat in self.platforms if -260 < plat.platform_rect.top < Config.HEIGHT + 220]
-            # ensure_platforms הוסר מכאן - הוא נקרא רק כשעולים למעלה!
             self.crumble_time_left_ms = self.update_platform_collapse_timer()
             self.level_number = self.current_stage
 
+            # Trigger game-over when player falls too far.
             if self.fall_distance_tracked > self.max_fall_distance or player_rect.top > self.fall_line:
                 self.game_over = True
                 if not self.score_saved:
@@ -352,10 +370,7 @@ class Game:
             self.player_x = float(player_rect.x)
             self.y = self.player_y
 
-            #
-            # if self.y <= 0:  # הגיע לראש המסך
-            #     self.next_level()
-
+            # Render the active gameplay frame.
             self.display_game()
 
             if self.is_paused:
@@ -366,10 +381,12 @@ class Game:
 
         return None
 
+    # Move to next logical level and ensure enough platforms exist.
     def next_level(self):
         self.level_number += 1
         self.ensure_platforms()
 
+    # Reset and generate initial platform layout for a new game/level.
     def init_platforms(self, level_number):
         print(
             f"🎮 init_platforms: התחלה - platform_counter = {self.platform_counter}")
@@ -385,9 +402,9 @@ class Game:
             print(
                 f"      Platform #{i}: index={idx}, stage={stage}, y={p.platform_rect.top}")
 
+    # Create one platform above a top anchor using stage-based difficulty values.
     def create_platform_above(self, top_anchor):
-        # חישוב תכונות הפלטפורמה לפי platforms_passed + מרחק משוער
-        # נספור כמה פלטפורמות יש בין השחקן לפלטפורמה החדשה
+        # Estimate platform number based on progress and current world position.
         player_y = self.m_player.player_rect.top
         platforms_above_player = len(
             [p for p in self.platforms if p.platform_rect.top < player_y])
@@ -407,8 +424,8 @@ class Game:
         platform_y = top_anchor - platform_gap
         platform_color = self.get_stage_color(stage_number)
 
-        # DEBUG: הדפסה למעקב אחרי צבעים
-        if estimated_plat_num <= 60:  # נדפיס את 60 הראשונות
+        # Debug print for early platforms to verify stage/color transitions.
+        if estimated_plat_num <= 60:
             print(
                 f"Platform #{estimated_plat_num:3d} | Stage {stage_number:2d} | Color {platform_color} | passed={self.platforms_passed}")
 
@@ -428,6 +445,7 @@ class Game:
 
         return new_platform
 
+    # Ensure enough platforms are available above the current highest one.
     def ensure_platforms(self):
         if not self.platforms:
             self.platforms = [self.first_platform]
@@ -439,6 +457,7 @@ class Game:
             self.platforms.append(new_platform)
             highest_platform_top = new_platform.platform_rect.top
 
+    # Apply world scrolling to platforms and score-related progress.
     def apply_world_scroll(self, scroll, count_progress=True):
         if scroll == 0:
             return
@@ -457,6 +476,7 @@ class Game:
                 self.background_offset_x + scroll_step * self.background_parallax_factor
             ) % Config.WIDTH
 
+    # Run collapse timer logic and periodically remove bottom platforms.
     def update_platform_collapse_timer(self):
         now_ticks = pygame.time.get_ticks()
         if self.platforms_passed < self.crumble_trigger_platforms:
@@ -480,6 +500,7 @@ class Game:
 
         return 0
 
+    # Remove the lowest safe platform that is not currently under the player.
     def collapse_next_bottom_platform(self):
         if len(self.platforms) <= 1:
             return
@@ -499,23 +520,25 @@ class Game:
             del self.platforms[idx]
             return
 
+    # Check whether player has passed the highest platform (legacy helper).
     def check_level_done(self):
-        # נניח שהשלב נגמר כשהשחקן הגיע מעל הפלטפורמה הכי גבוהה
+        # A level is considered complete once player is above the highest platform.
         highest_platform = min(
             [plat.platform_rect.top for plat in self.platforms])
         if self.y <= highest_platform:
             return True
         return False
 
+    # Render the game-over overlay and interactive options.
     def display_game_over(self):
         overlay = pygame.Surface((Config.WIDTH, Config.HEIGHT))
         overlay.set_alpha(180)
         overlay.fill((0, 0, 0))
 
         self.m_screen_two.blit(overlay, (0, 0))
-        mouse_pos = pygame.mouse.get_pos()  # מקבלים את מיקום העכבר
+        mouse_pos = pygame.mouse.get_pos()
 
-        # Game Over
+        # Draw game-over title and score.
         self.m_screen_two.blit(self.game_over_text, self.game_over_rect)
         self.final_score_text = self.game_font.render(
             f"SCORE {int(self.score)}", True, (255, 255, 255))
@@ -523,18 +546,19 @@ class Game:
             center=(Config.WIDTH // 2, 175))
         self.m_screen_two.blit(self.final_score_text, self.final_score_rect)
 
-        # Retry
+        # Draw retry action with hover feedback.
         retry_color = (255, 100, 100) if self.retry_rect.collidepoint(
             mouse_pos) else (255, 255, 255)
         retry_text = self.game_font.render("RETRY", True, retry_color)
         self.m_screen_two.blit(retry_text, self.retry_rect)
 
-        # Back to menu
+        # Draw back-to-menu action with hover feedback.
         back_color = (255, 100, 100) if self.back_to_menu_rect_go.collidepoint(
             mouse_pos) else (255, 255, 255)
         back_text = self.game_font.render("BACK TO MENU", True, back_color)
         self.m_screen_two.blit(back_text, self.back_to_menu_rect_go)
 
+    # Render gameplay background, platforms, HUD, and player.
     def display_game(self):
         bg_x = int(self.background_offset_x) % Config.WIDTH
         self.m_screen_two.blit(self.background_image_game,
@@ -571,6 +595,7 @@ class Game:
             self.m_screen_two.blit(break_text, (75, 128))
         self.m_player.draw(self.m_screen_two)
 
+    # Save final score through menu storage interface once per game-over state.
     def save_score_to_menu(self):
         if self.score_saved:
             return
@@ -580,6 +605,7 @@ class Game:
 
         self.score_saved = True
 
+    # Draw hourglass timer indicating time left before platform collapse starts.
     def draw_hourglass(self, position):
         x, y = position
         frame_color = (240, 240, 240)
@@ -639,12 +665,14 @@ class Game:
             pygame.draw.line(self.m_screen_two, sand_color,
                              (x + 17, y + 21), (x + 17, y + 27), 2)
 
+    # Resolve platform color by stage number.
     def get_stage_color(self, stage_number):
-        """קובע את הצבע לפי מספר השלב - כל 25 פלטפורמות = שלב אחד"""
+        """Resolve platform color by stage where each 25 platforms are one stage."""
         palette_index = (stage_number - 1) % len(self.STAGE_COLORS)
         color = self.STAGE_COLORS[palette_index]
         return color
 
+    # Reset per-frame stage difficulty parameters.
     def apply_stage_difficulty(self):
         self.gravity = self.base_gravity
         self.max_move_speed = self.base_max_move_speed
@@ -654,6 +682,7 @@ class Game:
         self.scroll_line = self.base_scroll_line
         self.scroll_speed_factor = 1.0
 
+    # Push camera upward if player remains idle for too long at higher stages.
     def apply_camera_pressure(self, move_dir):
         if self.current_stage <= 1 or self.platforms_passed < 1:
             self.idle_meter = 0.0
@@ -678,9 +707,11 @@ class Game:
         if rise_strength > 0.12 and self.idle_meter > 0.25:
             self.apply_world_scroll(rise_strength, count_progress=False)
 
+    # Sync external x/y values into the player's rect.
     def update_rect(self):
         self.m_player.player_rect.topleft = (self.x, self.y)
 
+    # Draw the pause overlay and pause menu actions.
     def display_pause_overlay(self):
         self.m_screen_two.blit(self.overlay, (0, 0))
         self.m_screen_two.blit(self.pause_text, self.pause_rect)

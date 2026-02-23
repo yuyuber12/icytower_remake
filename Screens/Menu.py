@@ -6,13 +6,18 @@ from pygame import Surface
 from Screens.Instructions import Instructions
 from settings import Config
 
+# Initialize pygame for the menu module.
 pygame.init()
 
 
+# Manage main menu navigation, instructions, and score display.
 class Menu:
+    # Initialize menu state, assets, and persistent score storage.
     def __init__(self, i_screen: Surface):
+        # Define where score history is stored.
         self.scores_file_path = os.path.join("Notes", "scores.json")
 
+        # Initialize shared static score fields once.
         if not hasattr(Menu, "scores_loaded"):
             Menu.scores_loaded = False
         if not hasattr(Menu, "score_history"):
@@ -23,6 +28,7 @@ class Menu:
             self.load_scores_from_file()
             Menu.scores_loaded = True
 
+        # Configure base menu flags and loaded images.
         self.m_screen_one = i_screen
         self.m_is_menu_running = True
         self.show_instructions = False
@@ -39,7 +45,7 @@ class Menu:
         self.menu_font = Config.CURRENT_FONT
         self.menu_text_x = 300
 
-        # Texts
+        # Build all menu text surfaces and interaction rectangles.
         self.play_game_text = self.menu_font.render(
             "PLAY GAME", True, Config.BLACK)
         self.play_game_text_x = self.menu_text_x
@@ -71,7 +77,7 @@ class Menu:
         self.back_rect = self.back_text.get_rect(
             center=(Config.WIDTH // 2, 390))
 
-        # Menu items
+        # Register selectable menu actions.
         self.menu_items = [
             {"text": self.play_game_text,
                 "rect": self.play_game_rect, "action": "play"},
@@ -81,22 +87,27 @@ class Menu:
             {"text": self.exit_text, "rect": self.exit_rect, "action": "exit"}
         ]
 
-        self.selected_index = 0  # הכפתור שנבחר כרגע
-        self.using_keyboard = False  # False = עכבר, True = מקלדת
+        # Track current selection and active input mode.
+        self.selected_index = 0
+        self.using_keyboard = False
 
-        # Finger position
+        # Initialize selector finger position and offsets.
         self.finger_x = self.play_game_rect.left - Config.FINGER_IMAGE.get_width() - 10
         self.finger_y = self.play_game_rect.centery - \
             Config.FINGER_IMAGE.get_height() // 2 + 10
         self.scores_finger_x_offset = 18
         self.scores_finger_y_offset = 16
 
+    # Run the menu loop and route actions to the right screen.
     def run(self):
         while self.m_is_menu_running:
+            # Process all incoming events for keyboard and mouse control.
             for event in pygame.event.get():
-                # Switch to mouse mode
+                # Switch to mouse mode on mouse activity.
                 if event.type in [pygame.MOUSEMOTION, pygame.MOUSEBUTTONDOWN]:
                     self.using_keyboard = False
+
+                # Handle score-screen specific inputs.
                 if self.show_scores:
                     if event.type == pygame.KEYDOWN and event.key in [pygame.K_ESCAPE, pygame.K_RETURN]:
                         self.show_scores = False
@@ -107,10 +118,11 @@ class Menu:
                     if event.type == pygame.QUIT:
                         return "exit"
                     continue
+
+                # Handle mouse click actions on menu items.
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         mouse_pos = pygame.mouse.get_pos()
-                # -------------------------------------------ללמוד אתזה---------------------
                         for item in self.menu_items:
                             if item["rect"].collidepoint(mouse_pos):
                                 action = item["action"]
@@ -125,9 +137,8 @@ class Menu:
                                     self.show_scores = True
                                 elif action == "exit":
                                     return "exit"
-                # -------------------------------------------ללמוד אתזה---------------------
-                # Keyboard navigation
-                # -------------------------------------------ללמוד אתזה---------------------
+
+                # Handle keyboard navigation and action selection.
                 if event.type == pygame.KEYDOWN:
                     if event.key in [pygame.K_DOWN, pygame.K_UP]:
                         self.using_keyboard = True
@@ -151,18 +162,21 @@ class Menu:
                         elif action == "exit":
                             return "exit"
 
+                # Handle direct window close.
                 if event.type == pygame.QUIT:
                     return "exit"
-                # -------------------------------------------ללמוד אתזה---------------------
 
+            # Render scores screen while it is active.
             if self.show_scores:
                 self.display_scores()
                 pygame.display.update()
                 Config.CLOCK.tick(Config.FPS)
                 continue
 
+            # Render standard menu view.
             self.display_menu()
 
+            # Compute current hover state for menu options.
             mouse_pos = pygame.mouse.get_pos()
             is_hover_on_play_game_rect = self.play_game_rect.collidepoint(
                 mouse_pos)
@@ -170,8 +184,8 @@ class Menu:
                 mouse_pos)
             is_hover_on_exit_rect = self.exit_rect.collidepoint(mouse_pos)
             is_hover_on_scores_rect = self.scores_rect.collidepoint(mouse_pos)
-            # -------------------------------------------ללמוד אתזה---------------------
-            # הצגת האצבע לפי מצב קלט
+
+            # Draw selector finger according to keyboard or mouse mode.
             if self.using_keyboard:
                 selected_rect = self.menu_items[self.selected_index]["rect"]
                 selected_action = self.menu_items[self.selected_index]["action"]
@@ -213,23 +227,26 @@ class Menu:
                         Config.FINGER_IMAGE.get_height() // 2 + self.scores_finger_y_offset
                     self.m_screen_one.blit(
                         Config.FINGER_IMAGE, (self.finger_x, self.finger_y))
-            # -------------------------------------------ללמוד אתזה---------------------
+
+            # Present the rendered menu frame.
             pygame.display.update()
             Config.CLOCK.tick(Config.FPS)
 
         return None
 
+    # Draw the main menu background and text buttons.
     def display_menu(self):
         # Background
         self.m_screen_one.blit(self.background_image, (0, 0))
         self.m_screen_one.blit(self.paper_image, self.paper_menu_pos)
 
-        # Draw texts
+        # Draw menu labels.
         self.m_screen_one.blit(self.play_game_text, self.play_game_rect)
         self.m_screen_one.blit(self.instructions_text, self.instructions_rect)
         self.m_screen_one.blit(self.exit_text, self.exit_rect)
         self.m_screen_one.blit(self.scores_text, self.scores_rect)
 
+    # Add a new score, keep top scores sorted, and persist to file.
     def add_score(self, score):
         safe_score = max(0, int(score))
         Menu.last_score = safe_score
@@ -238,6 +255,7 @@ class Menu:
         Menu.score_history = Menu.score_history[:10]
         self.save_scores_to_file()
 
+    # Load score data from disk and sanitize input values.
     def load_scores_from_file(self):
         try:
             if not os.path.exists(self.scores_file_path):
@@ -262,6 +280,7 @@ class Menu:
             Menu.score_history = []
             Menu.last_score = 0
 
+    # Save current score data to disk in JSON format.
     def save_scores_to_file(self):
         try:
             os.makedirs(os.path.dirname(self.scores_file_path), exist_ok=True)
@@ -274,6 +293,7 @@ class Menu:
         except OSError:
             return
 
+        # Render the score board screen and back button.
     def display_scores(self):
         self.m_screen_one.blit(self.background_image, (0, 0))
         self.m_screen_one.blit(self.paper_image, self.paper_scores_pos)
