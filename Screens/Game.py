@@ -15,6 +15,8 @@ LARGE_FONT = pygame.font.SysFont('Corbel', 60, bold=True)
 
 # Manage gameplay loop, movement, camera, platforms, and score flow.
 class Game:
+    WALL_SPARK_EVENT = pygame.USEREVENT + 1
+    JUMP_EFFECT_EVENT = pygame.USEREVENT + 2
     STAGE_PLATFORM_COUNT = 25
     STAGE_COLORS = [
         (155, 95, 215),
@@ -40,8 +42,6 @@ class Game:
         self.is_paused = False
         self.game_font = Config.CURRENT_FONT
         self.game_font_bigger = Config.CURRENT_FONT_BIGGER
-        self.platform_marker_font = pygame.font.SysFont(
-            'Corbel', 16, bold=True)
         self.overlay = pygame.image.load("Menu_images/MenuBG.jpg")
         self.background_image_game = pygame.image.load(
             "Game_images/Game_BG.jpg")
@@ -49,6 +49,8 @@ class Game:
             self.background_image_game, (Config.WIDTH, Config.HEIGHT))
         self.background_offset_x = 0.0
         self.background_parallax_factor = 0.2
+        self.active_effects = []
+        self.wall_touch_side = None
 
         # Build pause menu UI text surfaces.
         self.pause_text = self.game_font.render("PAUSED", True, Config.BLACK)
@@ -131,7 +133,6 @@ class Game:
         self.crumble_time_left_ms = self.crumble_delay_ms
         self.crumble_trigger_platforms = 6
         self.platforms_passed = 0
-        self.counted_platform_ids = set()
 
         # Configure platform generation and stage progression settings.
         self.platform_width = 140
@@ -142,7 +143,8 @@ class Game:
         self.platform_min_width = 85
         self.platform_max_width = 210
         self.target_platforms = 12
-        self.platform_counter = 2
+        self.platform_color = (60, 170, 220)
+        self.platform_counter = 1
         self.current_stage = 1
         self.selected_index = 0
         # self.level_done = False
@@ -159,11 +161,11 @@ class Game:
             self.platform_y,
             Config.WIDTH,
             self.platform_height,
-            self.get_stage_color(1),
+            self.platform_color,
             self.platform_border_radius,
         )
         self.first_platform.stage_number = 1
-        self.first_platform.platform_index = 1
+        self.first_platform.platform_index = 0
         self.first_platform.is_stage_end = False
         self.level_number = 1
         self.game_speed = 5  # מתחילים בקצב נמוך
@@ -180,6 +182,14 @@ class Game:
         while self.m_is_game_running:
             # Process window, keyboard, and mouse events.
             for event in pygame.event.get():
+                if event.type == self.WALL_SPARK_EVENT:
+                    self.spawn_wall_sparks(event.position, event.side)
+                    continue
+
+                if event.type == self.JUMP_EFFECT_EVENT:
+                    self.spawn_jump_effect(event.position)
+                    continue
+
                 if event.type == pygame.QUIT:
                     self.m_is_game_running = False
                 if event.type == pygame.KEYDOWN:
@@ -284,6 +294,17 @@ class Game:
                 self.player_x = float(player_rect.x)
                 self.velocity_x = 0.0
 
+            if player_rect.left <= 0:
+                if self.wall_touch_side != "left":
+                    self.post_wall_spark_event("left", player_rect)
+                self.wall_touch_side = "left"
+            elif player_rect.right >= Config.WIDTH:
+                if self.wall_touch_side != "right":
+                    self.post_wall_spark_event("right", player_rect)
+                self.wall_touch_side = "right"
+            else:
+                self.wall_touch_side = None
+
             # Apply gravity and move player vertically.
             self.velocity_y += self.gravity
             previous_top = player_rect.top
@@ -309,14 +330,15 @@ class Game:
 
                     # Count unique landed platforms for stage progression.
             if landed_platform is not None and landed_platform is not self.first_platform:
-                landed_id = id(landed_platform)
-                if landed_id not in self.counted_platform_ids:
-                    self.counted_platform_ids.add(landed_id)
-                    self.platforms_passed += 1
-                    self.current_stage = self.platforms_passed // self.STAGE_PLATFORM_COUNT + 1
+                landed_index = getattr(landed_platform, "platform_index", 0)
+                if landed_index > self.platforms_passed:
+                    self.platforms_passed = landed_index
+                    self.current_stage = self.get_stage_number_for_platform(
+                        landed_index)
 
             # Apply jump impulse with run-up and momentum bonuses.
             if self.on_ground and self.keys[pygame.K_SPACE]:
+                self.post_jump_effect_event(player_rect)
                 momentum_factor = min(
                     1.0, abs(self.velocity_x) / self.max_move_speed)
                 jump_bonus = self.max_jump_boost * \
@@ -357,6 +379,7 @@ class Game:
             # Keep only relevant platforms and update crumble timer.
             self.platforms = [
                 plat for plat in self.platforms if -260 < plat.platform_rect.top < Config.HEIGHT + 220]
+            self.update_effects()
             self.crumble_time_left_ms = self.update_platform_collapse_timer()
             self.level_number = self.current_stage
 
@@ -388,29 +411,13 @@ class Game:
 
     # Reset and generate initial platform layout for a new game/level.
     def init_platforms(self, level_number):
-        print(
-            f"🎮 init_platforms: התחלה - platform_counter = {self.platform_counter}")
         self.platforms = [self.first_platform]
-        print(
-            f"   first_platform: index={self.first_platform.platform_index}, stage={self.first_platform.stage_number}")
         self.ensure_platforms()
-        print(
-            f"   אחרי ensure_platforms: יש {len(self.platforms)} פלטפורמות, counter={self.platform_counter}")
-        for i, p in enumerate(self.platforms):
-            idx = getattr(p, 'platform_index', '?')
-            stage = getattr(p, 'stage_number', '?')
-            print(
-                f"      Platform #{i}: index={idx}, stage={stage}, y={p.platform_rect.top}")
 
     # Create one platform above a top anchor using stage-based difficulty values.
     def create_platform_above(self, top_anchor):
-        # Estimate platform number based on progress and current world position.
-        player_y = self.m_player.player_rect.top
-        platforms_above_player = len(
-            [p for p in self.platforms if p.platform_rect.top < player_y])
-        estimated_plat_num = self.platforms_passed + platforms_above_player + 1
-        stage_number = (estimated_plat_num -
-                        1) // self.STAGE_PLATFORM_COUNT + 1
+        platform_index = self.platform_counter
+        stage_number = self.get_stage_number_for_platform(platform_index)
         difficulty = min(stage_number - 1, 12)
         gap_min = 75 + difficulty * 5
         gap_max = 125 + difficulty * 10
@@ -422,12 +429,7 @@ class Game:
         platform_width = random.randint(width_min, width_max)
         platform_x = random.randint(0, Config.WIDTH - platform_width)
         platform_y = top_anchor - platform_gap
-        platform_color = self.get_stage_color(stage_number)
-
-        # Debug print for early platforms to verify stage/color transitions.
-        if estimated_plat_num <= 60:
-            print(
-                f"Platform #{estimated_plat_num:3d} | Stage {stage_number:2d} | Color {platform_color} | passed={self.platforms_passed}")
+        platform_color = self.platform_color
 
         new_platform = Platforms(
             platform_x,
@@ -438,9 +440,9 @@ class Game:
             self.platform_border_radius,
         )
         new_platform.stage_number = stage_number
-        new_platform.platform_index = estimated_plat_num
+        new_platform.platform_index = platform_index
         new_platform.is_stage_end = (
-            estimated_plat_num % self.STAGE_PLATFORM_COUNT == 0)
+            platform_index % self.STAGE_PLATFORM_COUNT == 0)
         self.platform_counter += 1
 
         return new_platform
@@ -564,22 +566,10 @@ class Game:
         self.m_screen_two.blit(self.background_image_game,
                                (bg_x - Config.WIDTH, 0))
         self.m_screen_two.blit(self.background_image_game, (bg_x, 0))
+        self.draw_effects()
         for plat in self.platforms:
-            platform_index = getattr(plat, "platform_index", 1)
-            stage_number = (platform_index -
-                            1) // self.STAGE_PLATFORM_COUNT + 1
-            stage_color = self.get_stage_color(stage_number)
-            plat._color = stage_color
-            plat.stage_number = stage_number
+            plat._color = self.platform_color
             plat.draw(self.m_screen_two)
-            if getattr(plat, "is_stage_end", False):
-                marker_text = self.platform_marker_font.render(
-                    f"{platform_index}", True, Config.BLACK)
-                marker_rect = marker_text.get_rect(
-                    center=(plat.platform_rect.centerx,
-                            plat.platform_rect.centery)
-                )
-                self.m_screen_two.blit(marker_text, marker_rect)
 
         level_text = self.game_font.render(
             f"LEVEL {self.level_number}", True, Config.WHITE)
@@ -593,6 +583,11 @@ class Game:
         if self.crumble_started:
             break_text = self.game_font.render("BREAK", True, (255, 150, 150))
             self.m_screen_two.blit(break_text, (75, 128))
+        self.m_player.update_animation(
+            self.velocity_x,
+            self.velocity_y,
+            self.on_ground,
+        )
         self.m_player.draw(self.m_screen_two)
 
     # Save final score through menu storage interface once per game-over state.
@@ -671,6 +666,106 @@ class Game:
         palette_index = (stage_number - 1) % len(self.STAGE_COLORS)
         color = self.STAGE_COLORS[palette_index]
         return color
+
+    # Resolve stage number from a stable platform index while skipping the start floor.
+    def get_stage_number_for_platform(self, platform_index):
+        if platform_index <= 0:
+            return 1
+
+        return (platform_index - 1) // self.STAGE_PLATFORM_COUNT + 1
+
+    # Queue a custom event for sparks when the player hits a wall.
+    def post_wall_spark_event(self, side, player_rect):
+        y_position = player_rect.centery + random.randint(-12, 12)
+        x_position = 0 if side == "left" else Config.WIDTH
+        pygame.event.post(pygame.event.Event(
+            self.WALL_SPARK_EVENT,
+            {
+                "side": side,
+                "position": (x_position, y_position),
+            },
+        ))
+
+    # Queue a custom event for a jump burst under the player.
+    def post_jump_effect_event(self, player_rect):
+        pygame.event.post(pygame.event.Event(
+            self.JUMP_EFFECT_EVENT,
+            {
+                "position": (player_rect.centerx, player_rect.bottom),
+            },
+        ))
+
+    # Spawn spark particles near the touched wall.
+    def spawn_wall_sparks(self, position, side):
+        x_position, y_position = position
+        direction = 1 if side == "left" else -1
+
+        for _ in range(12):
+            self.active_effects.append({
+                "x": float(x_position),
+                "y": float(y_position),
+                "vx": random.uniform(2.0, 5.0) * direction,
+                "vy": random.uniform(-2.5, 2.5),
+                "radius": random.randint(2, 4),
+                "color": random.choice([
+                    (255, 214, 102),
+                    (255, 170, 60),
+                    (255, 245, 180),
+                ]),
+                "life": random.randint(12, 20),
+                "gravity": 0.12,
+            })
+
+    # Spawn a jump burst under the player.
+    def spawn_jump_effect(self, position):
+        x_position, y_position = position
+
+        for _ in range(14):
+            self.active_effects.append({
+                "x": float(x_position + random.randint(-10, 10)),
+                "y": float(y_position),
+                "vx": random.uniform(-2.2, 2.2),
+                "vy": random.uniform(-3.8, -1.2),
+                "radius": random.randint(3, 6),
+                "color": random.choice([
+                    (180, 240, 255),
+                    (255, 255, 255),
+                    (120, 210, 255),
+                ]),
+                "life": random.randint(14, 24),
+                "gravity": 0.08,
+            })
+
+    # Advance and discard expired visual-effect particles.
+    def update_effects(self):
+        alive_effects = []
+        for effect in self.active_effects:
+            effect["x"] += effect["vx"]
+            effect["y"] += effect["vy"]
+            effect["vy"] += effect["gravity"]
+            effect["life"] -= 1
+            if effect["life"] <= 0:
+                continue
+
+            if effect["x"] < -20 or effect["x"] > Config.WIDTH + 20:
+                continue
+
+            if effect["y"] < -20 or effect["y"] > Config.HEIGHT + 20:
+                continue
+
+            alive_effects.append(effect)
+
+        self.active_effects = alive_effects
+
+    # Draw active visual-effect particles.
+    def draw_effects(self):
+        for effect in self.active_effects:
+            pygame.draw.circle(
+                self.m_screen_two,
+                effect["color"],
+                (int(effect["x"]), int(effect["y"])),
+                max(1, effect["radius"]),
+            )
 
     # Reset per-frame stage difficulty parameters.
     def apply_stage_difficulty(self):

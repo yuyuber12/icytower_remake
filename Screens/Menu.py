@@ -43,6 +43,9 @@ class Menu:
         self.paper_scores_pos = (110, 45)
         self.instructions_image = pygame.image.load("Menu_images/SpaceBar.png")
         self.menu_font = Config.CURRENT_FONT
+        self.score_item_font = pygame.font.Font("Fonts/Grandboom Demo.otf", 32)
+        self.scores_hint_font = pygame.font.Font(
+            "Fonts/Grandboom Demo.otf", 22)
         self.menu_text_x = 300
 
         # Build all menu text surfaces and interaction rectangles.
@@ -75,7 +78,7 @@ class Menu:
         self.scores_title = self.menu_font.render("SCORES", True, Config.BLACK)
         self.back_text = self.menu_font.render("BACK", True, Config.BLACK)
         self.back_rect = self.back_text.get_rect(
-            center=(Config.WIDTH // 2, 390))
+            center=(Config.WIDTH // 2, 470))
 
         # Register selectable menu actions.
         self.menu_items = [
@@ -97,6 +100,26 @@ class Menu:
             Config.FINGER_IMAGE.get_height() // 2 + 10
         self.scores_finger_x_offset = 18
         self.scores_finger_y_offset = 16
+        self.scores_scroll_offset = 0
+        self.scores_visible_rows = 5
+        self.scores_row_height = 40
+        self.scores_list_left = 220
+        self.scores_list_top = 205
+
+    # Open the scores screen and reset the scroll position.
+    def open_scores_screen(self):
+        self.show_scores = True
+        self.scores_scroll_offset = 0
+
+    # Scroll score entries up or down while keeping the offset in range.
+    def scroll_scores(self, direction):
+        max_scroll = self.get_max_scores_scroll()
+        self.scores_scroll_offset = max(
+            0, min(self.scores_scroll_offset + direction, max_scroll))
+
+    # Return the maximum valid scroll offset for the score list.
+    def get_max_scores_scroll(self):
+        return max(0, len(Menu.score_history) - self.scores_visible_rows)
 
     # Run the menu loop and route actions to the right screen.
     def run(self):
@@ -111,10 +134,29 @@ class Menu:
                 if self.show_scores:
                     if event.type == pygame.KEYDOWN and event.key in [pygame.K_ESCAPE, pygame.K_RETURN]:
                         self.show_scores = False
+                    elif event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_DOWN:
+                            self.scroll_scores(1)
+                        elif event.key == pygame.K_UP:
+                            self.scroll_scores(-1)
+                        elif event.key == pygame.K_PAGEDOWN:
+                            self.scroll_scores(self.scores_visible_rows)
+                        elif event.key == pygame.K_PAGEUP:
+                            self.scroll_scores(-self.scores_visible_rows)
+                        elif event.key == pygame.K_END:
+                            self.scores_scroll_offset = self.get_max_scores_scroll()
+                        elif event.key == pygame.K_HOME:
+                            self.scores_scroll_offset = 0
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         mouse_pos = pygame.mouse.get_pos()
                         if self.back_rect.collidepoint(mouse_pos):
                             self.show_scores = False
+                    elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 4:
+                        self.scroll_scores(-1)
+                    elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 5:
+                        self.scroll_scores(1)
+                    elif event.type == pygame.MOUSEWHEEL:
+                        self.scroll_scores(-event.y)
                     if event.type == pygame.QUIT:
                         return "exit"
                     continue
@@ -134,7 +176,7 @@ class Menu:
                                         self.m_screen_one)
                                     instructions.run()
                                 elif action == "scores":
-                                    self.show_scores = True
+                                    self.open_scores_screen()
                                 elif action == "exit":
                                     return "exit"
 
@@ -158,7 +200,7 @@ class Menu:
                             instructions = Instructions(self.m_screen_one)
                             instructions.run()
                         elif action == "scores":
-                            self.show_scores = True
+                            self.open_scores_screen()
                         elif action == "exit":
                             return "exit"
 
@@ -246,13 +288,12 @@ class Menu:
         self.m_screen_one.blit(self.exit_text, self.exit_rect)
         self.m_screen_one.blit(self.scores_text, self.scores_rect)
 
-    # Add a new score, keep top scores sorted, and persist to file.
+    # Add a new score, keep all scores sorted, and persist to file.
     def add_score(self, score):
         safe_score = max(0, int(score))
         Menu.last_score = safe_score
         Menu.score_history.append(safe_score)
         Menu.score_history.sort(reverse=True)
-        Menu.score_history = Menu.score_history[:10]
         self.save_scores_to_file()
 
     # Load score data from disk and sanitize input values.
@@ -274,7 +315,7 @@ class Menu:
             cleaned_scores = [
                 max(0, int(item)) for item in score_history if isinstance(item, (int, float))]
             cleaned_scores.sort(reverse=True)
-            Menu.score_history = cleaned_scores[:10]
+            Menu.score_history = cleaned_scores
             Menu.last_score = max(0, int(last_score))
         except (OSError, ValueError, TypeError, json.JSONDecodeError):
             Menu.score_history = []
@@ -305,11 +346,34 @@ class Menu:
         self.m_screen_one.blit(last_score_text, (220, 145))
 
         if Menu.score_history:
-            top_scores = Menu.score_history[:5]
-            for index, score in enumerate(top_scores, start=1):
-                score_text = self.menu_font.render(
+            visible_scores = Menu.score_history[
+                self.scores_scroll_offset:self.scores_scroll_offset + self.scores_visible_rows]
+            for index, score in enumerate(visible_scores, start=self.scores_scroll_offset + 1):
+                score_text = self.score_item_font.render(
                     f"{index}. {score}", True, Config.BLACK)
-                self.m_screen_one.blit(score_text, (220, 145 + index * 58))
+                row_index = index - self.scores_scroll_offset - 1
+                self.m_screen_one.blit(
+                    score_text,
+                    (self.scores_list_left,
+                     self.scores_list_top + row_index * self.scores_row_height),
+                )
+
+            range_start = self.scores_scroll_offset + 1
+            range_end = min(
+                self.scores_scroll_offset + self.scores_visible_rows,
+                len(Menu.score_history),
+            )
+            progress_text = self.scores_hint_font.render(
+                f"SHOWING {range_start}-{range_end} / {len(Menu.score_history)}",
+                True,
+                Config.BLACK,
+            )
+            hint_text = self.scores_hint_font.render(
+                "WHEEL OR ARROWS TO SCROLL",
+                True,
+                Config.BLACK,
+            )
+
         else:
             no_scores_text = self.menu_font.render(
                 "NO SCORES YET", True, Config.BLACK)
